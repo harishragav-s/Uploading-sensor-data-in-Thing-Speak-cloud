@@ -1,11 +1,11 @@
-# Uploading temperature sensor data in Thing Speak cloud
+# Uploading sensor data in Thing Speak cloud
 
 # AIM:
-To monitor the temperature sensor data in the Thing speak using an ESP32 controller.
+To monitor the distance of the obstacle using an Ultrasonic sensor and uploading the data in the Thing speak using an ESP32 controller.
 
 # Apparatus required:
 ESP32 Controller  </br>
-Temperature Sensor </br>
+HC-SR04 Ultrasonic sensor module </br>
 Power supply </br>
 Connecting wires </br>
 Bread board </br>
@@ -25,16 +25,6 @@ Step10: Check the jumper position and connect 4 & 5 of P4.  </br>
 Step11. Upload the program in the esp32. </br>
 Step12 Press the boot button in ESP32 and then press and release the reset button after release the boot button </br>
 Step13 Check the output in the cloud </br>
-
-## Thingspeak
-
-Step1 Create a ThingSpeak Account </br>
-Step2 Log in to your ThingSpeak account </br>
-Step3 Create a new channel by navigating to "Channels" and clicking on "New Channel." </br>
-Step4 Configure your channel settings, such as Field labels and Channel name </br>
-Step5 Copy the Channel ID and API key in the thingspeak and update in the program </br>
-Step6 Execute your program to send the sensor value to ThingSpeak </br>
-Step7 Check your ThingSpeak channel to verify that the sensor value has been updated </br>
 
 # THEORY:
 
@@ -71,12 +61,68 @@ Automatically act on your data and communicate using third-party services like T
 
 
 # PROGRAM:
+```
+#include "ThingSpeak.h"
+#include <WiFi.h>
+
+char ssid[] = "Harish"; //SSID
+char pass[] = "izsfo_135"; // Password
+
+
+const int trigger = 25;
+const int echo = 26;
+long T;
+float distanceCM;
+WiFiClient  client;
+
+unsigned long myChannelField = 2711832; // Channel ID
+const int ChannelField = 1; // Which channel to write data
+const char * myWriteAPIKey = "XVAUD8QPONVNP2HN"; // Your write API Key
+
+void setup()
+{
+  Serial.begin(115200);
+  pinMode(trigger, OUTPUT);
+  pinMode(echo, INPUT);
+  WiFi.mode(WIFI_STA);
+  ThingSpeak.begin(client);
+}
+void loop()
+{
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.print("Attempting to connect to SSID: ");
+    Serial.println(ssid);
+    while (WiFi.status() != WL_CONNECTED)
+    {
+      WiFi.begin(ssid, pass);
+      Serial.print(".");
+      delay(5000);
+    }
+    Serial.println("\nConnected.");
+  }
+  digitalWrite(trigger, LOW);
+  delay(1);
+  digitalWrite(trigger, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigger, LOW);
+  T = pulseIn(echo, HIGH);
+  distanceCM = T * 0.034;
+  distanceCM = distanceCM / 2;
+  Serial.print("Distance in cm: ");
+  Serial.println(distanceCM);
+  ThingSpeak.writeField(myChannelField, ChannelField, distanceCM, myWriteAPIKey);
+  delay(1000);
+}
+```
 
 # CIRCUIT DIAGRAM:
+![POIexp4CD](https://github.com/Yuvakrishna0/Uploading-sensor-data-in-Thing-Speak-cloud/assets/117915037/9798f0ba-6f1e-434e-bfc8-7585802e543c)
+
 
 # OUTPUT:
+![237986609-a78158ed-5fce-4ee5-8d01-a094b0bc60c1](https://github.com/user-attachments/assets/a3175ebc-f71e-4d2b-ba50-6c2d5f09448d)
+
 
 # RESULT:
-
-Thus the temperature sensor values are updated in the Thing speak using ESP32 controller.
-
+Thus the distance of the obstacle was monitored using Ultrasonic sensor and the distance values are uploaded in the Thing speak using ESP32 controller.
